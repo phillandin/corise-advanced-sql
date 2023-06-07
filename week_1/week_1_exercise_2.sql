@@ -21,7 +21,6 @@
 -- Finally, all the customer data from `food_preferences` is joined with `recipe_with_tags` based
 -- on each customers first food property preference so that each customer has a corresponding
 -- suggested recipe.
-
 with customers as (
     select ca.customer_id,
         cd.first_name,
@@ -34,18 +33,24 @@ with customers as (
 food_tags as (
     select c.*,
         rt.tag_property,
-        row_number() over (partition by c.customer_id order by tag_property) rn
+        row_number() over (
+            partition by c.customer_id
+            order by tag_property
+        ) rn
     from customers c
-        inner join vk_data.customers.customer_survey cs
-        on c.customer_id = cs.customer_id
-        join vk_data.resources.recipe_tags rt
-        on rt.tag_id = cs.tag_id
+        inner join vk_data.customers.customer_survey cs on c.customer_id = cs.customer_id
+        join vk_data.resources.recipe_tags rt on rt.tag_id = cs.tag_id
 ),
 food_preferences as (
     select *
-    from food_tags
-    pivot (max(tag_property) for rn in (1, 2, 3))
-        as pivot_values (customer_id, first_name, email, preference_1, preference_2, preference_3)
+    from food_tags pivot (max(tag_property) for rn in (1, 2, 3)) as pivot_values (
+            customer_id,
+            first_name,
+            email,
+            preference_1,
+            preference_2,
+            preference_3
+        )
 ),
 recipe_with_tags as (
     select flat_tag_list.value tag,
@@ -57,6 +62,5 @@ recipe_with_tags as (
 select fp.*,
     rt.suggested_recipe
 from food_preferences fp
-left join recipe_with_tags rt
-    on fp.preference_1 = rt.tag
-    order by email;
+    left join recipe_with_tags rt on fp.preference_1 = rt.tag
+order by email;
