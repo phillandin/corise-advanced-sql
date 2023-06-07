@@ -48,7 +48,7 @@ food_preferences as (
         as pivot_values (customer_id, first_name, email, preference_1, preference_2, preference_3)
 ),
 recipe_with_tags as (
-    select trim(flat_tag_list.value) tag,
+    select flat_tag_list.value tag,
         min(recipe_name) suggested_recipe
     from vk_data.chefs.recipe,
         table(flatten(tag_list)) as flat_tag_list
@@ -59,4 +59,4 @@ select fp.*,
 from food_preferences fp
 left join recipe_with_tags rt
     on fp.preference_1 = rt.tag
-order by email;
+    order by email;
