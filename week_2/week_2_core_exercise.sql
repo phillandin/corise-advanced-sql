@@ -1,7 +1,7 @@
 with affected_customer_addresses as (
 /* This cte cleans the customer city and state fields so they're ready to compare with the us_cities table
-and applies the filters that were previously in the where clause. This improve readability (and performance,
-I think) of the entire query.
+and applies the filters that were previously in the where clause of the main query. This improve
+readability (and performance, I think) of the entire query.
 
 The where clause is also formatted to be consistent across each clause and to read easier. Since the state
 and city fields are already cleaned, the where clause filters on exact string values instead of using ilike
@@ -80,9 +80,9 @@ select
     (st_distance(clean_cities.geo_location, gary_geo.geo_location) / 1609)::int as gary_distance_miles
 from affected_customer_addresses
 
-/* I changed the alias for customer_data from 'c' to 'customer_data' to make it more understandable and used
+/* I changed the alias for customer_data from 'c' to 'customer_data' to make it more understandable. I used
 a left join to ensure that (in the case that their data was not in the customer_data table for some reason)
-they would not be dropped */
+a customer from the list of affected customers would not be dropped */
 left join vk_data.customers.customer_data as customer_data
     on affected_customer_addresses.customer_id = customer_data.customer_id
 left join clean_cities
